@@ -25,7 +25,7 @@ vector<vector<unsigned int>> rowround(vector<vector<unsigned int>> y) {
     res[0] = z[0];
 
     z[1] = quarterround(vector<unsigned int> {y[1][1], y[1][2], y[1][3], y[1][0]});
-    res[1] = { z[1][1], z[1][2], z[1][3],  z[1][0]};
+    res[1] = { z[1][3], z[1][0], z[1][1],  z[1][2]};
 
     z[2] = quarterround(vector<unsigned int> {y[2][2], y[2][3], y[2][0], y[2][1]});
     res[2] = {z[2][2], z[2][3],  z[2][0],  z[2][1]};
@@ -50,18 +50,29 @@ vector<vector<unsigned int>> columnround(vector<vector<unsigned int>> y) {
     return vector<vector<unsigned int>> {res[0], res[1], res[2], res[3]};
 }
 
+vector<vector<unsigned int>> doubleround(vector<vector<unsigned int>> y) {
+    return rowround(columnround(y)); 
+}
+
+unsigned int littleendian(vector<unsigned char> b) {
+    return (b[0] + b[1] * (1 << 8) + b[2] * (1 << 16) + b[3] * (1 << 24));
+}
+
 int main()
 {
-    vector<vector<unsigned int>> A = { {0x00000001, 0x00000000, 0x00000000, 0x00000000 },
-    { 0x00000001, 0x00000000, 0x00000000, 0x00000000 },
-        { 0x00000001, 0x00000000, 0x00000000, 0x00000000},
-        {0x00000001, 0x00000000, 0x00000000, 0x00000000 } };
-    vector<vector<unsigned int>> B = columnround(A);
+   /* vector<vector<unsigned int>> A = { {0x00000001, 0x00000000, 0x00000000, 0x00000000},
+    {0x00000000, 0x00000000, 0x00000000, 0x00000000 },
+        {0x00000000, 0x00000000, 0x00000000, 0x00000000},
+        {0x00000000, 0x00000000, 0x00000000, 0x00000000} };
+    vector<vector<unsigned int>> B = doubleround(A);
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
             cout << B[i][j] << endl; 
         }
-    }
+    }*/
+    vector<unsigned char> A = {86, 75, 30, 9};
+    unsigned int B = littleendian(A);
+    cout << B << endl; 
     /*vector<unsigned int> A = {0x00000001, 0x00000000, 0x00000000, 0x00000000 };
     vector<unsigned int> B = quarterround(A);
     for (int i = 0; i < 4; i++) {
