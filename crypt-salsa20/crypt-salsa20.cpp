@@ -68,9 +68,9 @@ vector<unsigned char> littleendian_1(unsigned int b) {
 }
 
 
-vector<vector<unsigned char>> salsa20(vector<unsigned char> b) {
+vector<unsigned char> salsa20(vector<unsigned char> b) {
     vector<vector<unsigned int>> z = { {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0} };
-    vector<vector<unsigned char>> result = { { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 },
+    vector<vector<unsigned char>> hash = { { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 },
                                              { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 },
                                              { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 },
                                              { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 } };
@@ -89,14 +89,16 @@ vector<vector<unsigned char>> salsa20(vector<unsigned char> b) {
         for (int j = 0; j < 4; ++j)
         {
             z[i][j] += x[i][j];
-            result[i*4 + j] = littleendian_1(z[i][j]);
+            hash[i*4 + j] = littleendian_1(z[i][j]);
         }
-
+    vector<unsigned char> result;
+    for (int i = 0; i < hash.size(); ++i)
+        result.insert(result.end(), hash[i].begin(), hash[i].end());
 
     return result; 
 }
 
-vector<vector<unsigned char>> expansion32(vector<vector<unsigned char>> k0, vector<vector<unsigned char>> k1, vector<vector<unsigned char>> n) {
+vector<unsigned char> expansion32(vector<vector<unsigned char>> k0, vector<vector<unsigned char>> k1, vector<vector<unsigned char>> n) {
     vector<unsigned char> result;
     vector<vector<unsigned char>> omega = { {101, 120, 112, 97},
         {110,100, 32, 51},
@@ -106,7 +108,7 @@ vector<vector<unsigned char>> expansion32(vector<vector<unsigned char>> k0, vect
     for (int i = 0; i < 4; ++i)
         result.insert(result.end(), k0[i].begin(), k0[i].end());
     result.insert(result.end(), omega[1].begin(), omega[1].end());
-    for (int i = 0; i < 4; ++i)
+    for (int i = 0; i < n.size(); ++i)
         result.insert(result.end(), n[i].begin(), n[i].end());
     result.insert(result.end(), omega[2].begin(), omega[2].end());
     for (int i = 0; i < 4; ++i)
@@ -115,7 +117,7 @@ vector<vector<unsigned char>> expansion32(vector<vector<unsigned char>> k0, vect
     return salsa20(result);
 }
 
-vector<vector<unsigned char>> expansion16(vector<vector<unsigned char>> k0, vector<vector<unsigned char>> n) {
+vector<unsigned char> expansion16(vector<vector<unsigned char>> k0, vector<vector<unsigned char>> n) {
     vector<unsigned char> result;
     vector<vector<unsigned char>> omega = { {101, 120, 112, 97},
         {110,100, 32, 49},
@@ -125,7 +127,7 @@ vector<vector<unsigned char>> expansion16(vector<vector<unsigned char>> k0, vect
     for (int i = 0; i < 4; ++i)
         result.insert(result.end(), k0[i].begin(), k0[i].end());
     result.insert(result.end(), omega[1].begin(), omega[1].end());
-    for (int i = 0; i < 4; ++i)
+    for (int i = 0; i < n.size(); ++i)
         result.insert(result.end(), n[i].begin(), n[i].end());
     result.insert(result.end(), omega[2].begin(), omega[2].end());
     for (int i = 0; i < 4; ++i)
@@ -133,6 +135,16 @@ vector<vector<unsigned char>> expansion16(vector<vector<unsigned char>> k0, vect
     result.insert(result.end(), omega[3].begin(), omega[3].end());
     return salsa20(result);
 }
+
+string encrypt(vector<vector<unsigned char>> k0, vector<vector<unsigned char>> k1, vector<vector<unsigned char>> n, string message) {
+    vector<unsigned char> salsa_key_exp = expansion32(k0, k1, n); 
+    string result = "";
+    for (int i = 0; i < message.length(); i++)
+        result += char(salsa_key_exp[i % 64] ^ message[i]);
+    return result;
+}
+
+
 int main()
 {
    /* vector<vector<unsigned int>> A = { {0x00000001, 0x00000000, 0x00000000, 0x00000000},
@@ -166,12 +178,14 @@ int main()
     }*/
     vector<vector<unsigned char>> k0 = { {1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12},{13, 14, 15, 16} };
     vector<vector<unsigned char>> k1 = { {201, 202, 203, 204}, {205, 206, 207, 208}, {209, 210, 211, 212},{213, 214, 215, 216} };
-    vector<vector<unsigned char>> n = { {101, 102, 103, 104}, {105, 106, 107, 108}, {109, 110, 111, 112},{113, 114, 115, 116} };
-    vector<vector<unsigned char>> res = expansion16(k0, n);
-    for (int i = 0; i < 16; i++) {
+    vector<vector<unsigned char>> n = { {101, 102, 103, 104}, {105, 106, 107, 108}, {109, 110, 111, 112}, {113,114,115,116} };
+    //vector<vector<unsigned char>> res = expansion16(k0, n);
+    /*for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 4; j++) {
             cout << (int)res[i][j] << " ";
         }
-    }
+    }*/
+    cout << encrypt(k0, k1, n, "fjdjvnjreubjndkv;lfdb") << endl;
+    cout << encrypt(k0, k1, n, encrypt(k0, k1, n, "fjdjvnjreubjndkv;lfdb"));
 }
 
