@@ -74,7 +74,7 @@ vector<vector<unsigned char>> salsa20(vector<unsigned char> b) {
                                              { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 },
                                              { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 },
                                              { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 } };
-    unsigned char vedro[4];
+    
     for (int i = 0; i < 4; ++i)
         for (int j = 0; j < 4; ++j)
         {
@@ -96,7 +96,43 @@ vector<vector<unsigned char>> salsa20(vector<unsigned char> b) {
     return result; 
 }
 
+vector<vector<unsigned char>> expansion32(vector<vector<unsigned char>> k0, vector<vector<unsigned char>> k1, vector<vector<unsigned char>> n) {
+    vector<unsigned char> result;
+    vector<vector<unsigned char>> omega = { {101, 120, 112, 97},
+        {110,100, 32, 51},
+        {50, 45, 98, 121},
+        {116, 101, 32, 107} };
+    result.insert(result.end(), omega[0].begin(), omega[0].end());
+    for (int i = 0; i < 4; ++i)
+        result.insert(result.end(), k0[i].begin(), k0[i].end());
+    result.insert(result.end(), omega[1].begin(), omega[1].end());
+    for (int i = 0; i < 4; ++i)
+        result.insert(result.end(), n[i].begin(), n[i].end());
+    result.insert(result.end(), omega[2].begin(), omega[2].end());
+    for (int i = 0; i < 4; ++i)
+        result.insert(result.end(), k1[i].begin(), k1[i].end());
+    result.insert(result.end(), omega[3].begin(), omega[3].end());
+    return salsa20(result);
+}
 
+vector<vector<unsigned char>> expansion16(vector<vector<unsigned char>> k0, vector<vector<unsigned char>> n) {
+    vector<unsigned char> result;
+    vector<vector<unsigned char>> omega = { {101, 120, 112, 97},
+        {110,100, 32, 49},
+        {54, 45, 98, 121},
+        {116, 101, 32, 107} };
+    result.insert(result.end(), omega[0].begin(), omega[0].end());
+    for (int i = 0; i < 4; ++i)
+        result.insert(result.end(), k0[i].begin(), k0[i].end());
+    result.insert(result.end(), omega[1].begin(), omega[1].end());
+    for (int i = 0; i < 4; ++i)
+        result.insert(result.end(), n[i].begin(), n[i].end());
+    result.insert(result.end(), omega[2].begin(), omega[2].end());
+    for (int i = 0; i < 4; ++i)
+        result.insert(result.end(), k0[i].begin(), k0[i].end());
+    result.insert(result.end(), omega[3].begin(), omega[3].end());
+    return salsa20(result);
+}
 int main()
 {
    /* vector<vector<unsigned int>> A = { {0x00000001, 0x00000000, 0x00000000, 0x00000000},
@@ -117,7 +153,7 @@ int main()
     for (int i = 0; i < 4; i++) {
         cout << B[i] << endl;
     }*/
-    vector<unsigned char> A = { 211,159, 13,115, 76, 55, 82,183, 3,117,222, 37,191,187,234,136,
+   /* vector<unsigned char> A = { 211,159, 13,115, 76, 55, 82,183, 3,117,222, 37,191,187,234,136,
         49,237,179, 48, 1,106,178,219,175,199,166, 48, 86, 16,179,207,
         31,240, 32, 63, 15, 83, 93,161,116,147, 48,113,238, 55,204, 36,
         79,201,235, 79, 3, 81,156, 47,203, 26,244,243, 88,118,104, 54 };
@@ -127,7 +163,15 @@ int main()
             cout << (int)B[i][j] << " ";
         }
         cout << endl;
+    }*/
+    vector<vector<unsigned char>> k0 = { {1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12},{13, 14, 15, 16} };
+    vector<vector<unsigned char>> k1 = { {201, 202, 203, 204}, {205, 206, 207, 208}, {209, 210, 211, 212},{213, 214, 215, 216} };
+    vector<vector<unsigned char>> n = { {101, 102, 103, 104}, {105, 106, 107, 108}, {109, 110, 111, 112},{113, 114, 115, 116} };
+    vector<vector<unsigned char>> res = expansion16(k0, n);
+    for (int i = 0; i < 16; i++) {
+        for (int j = 0; j < 4; j++) {
+            cout << (int)res[i][j] << " ";
+        }
     }
-
 }
 
