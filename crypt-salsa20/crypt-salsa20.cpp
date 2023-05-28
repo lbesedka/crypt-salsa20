@@ -58,6 +58,45 @@ unsigned int littleendian(vector<unsigned char> b) {
     return (b[0] + b[1] * (1 << 8) + b[2] * (1 << 16) + b[3] * (1 << 24));
 }
 
+vector<unsigned char> littleendian_1(unsigned int b) {
+    vector<unsigned char> result = { 0, 0, 0, 0 };
+    result[0] = b;
+    result[1] = b >> 8;
+    result[2] = b >> 16;
+    result[3] = b >> 24;
+    return result;
+}
+
+
+vector<vector<unsigned char>> salsa20(vector<unsigned char> b) {
+    vector<vector<unsigned int>> z = { {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0} };
+    vector<vector<unsigned char>> result = { { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 },
+                                             { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 },
+                                             { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 },
+                                             { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 }, { 0,0,0,0 } };
+    unsigned char vedro[4];
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 4; ++j)
+        {
+            vector<unsigned char> seq = { b[i * 16 + j * 4], b[i * 16 + j * 4 + 1],
+                b[i * 16 + j * 4 + 2], b[i * 16 + j * 4 + 3] };
+            z[i][j] = littleendian(seq);
+        }
+    vector<vector<unsigned int>> x = z;
+    for (int i = 0; i < 10; i++)
+        z = doubleround(z);
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 4; ++j)
+        {
+            z[i][j] += x[i][j];
+            result[i*4 + j] = littleendian_1(z[i][j]);
+        }
+
+
+    return result; 
+}
+
+
 int main()
 {
    /* vector<vector<unsigned int>> A = { {0x00000001, 0x00000000, 0x00000000, 0x00000000},
@@ -70,14 +109,25 @@ int main()
             cout << B[i][j] << endl; 
         }
     }*/
-    vector<unsigned char> A = {86, 75, 30, 9};
+    /*vector<unsigned char> A = {86, 75, 30, 9};
     unsigned int B = littleendian(A);
-    cout << B << endl; 
+    cout << B << endl; */
     /*vector<unsigned int> A = {0x00000001, 0x00000000, 0x00000000, 0x00000000 };
     vector<unsigned int> B = quarterround(A);
     for (int i = 0; i < 4; i++) {
         cout << B[i] << endl;
     }*/
+    vector<unsigned char> A = { 211,159, 13,115, 76, 55, 82,183, 3,117,222, 37,191,187,234,136,
+        49,237,179, 48, 1,106,178,219,175,199,166, 48, 86, 16,179,207,
+        31,240, 32, 63, 15, 83, 93,161,116,147, 48,113,238, 55,204, 36,
+        79,201,235, 79, 3, 81,156, 47,203, 26,244,243, 88,118,104, 54 };
+    vector<vector<unsigned char>> B = salsa20(A);
+    for (int i = 0; i < 16; i++) {
+        for (int j = 0; j < 4; j++) {
+            cout << (int)B[i][j] << " ";
+        }
+        cout << endl;
+    }
 
 }
 
